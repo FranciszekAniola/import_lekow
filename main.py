@@ -1,9 +1,3 @@
-# WERSJA GIT
-# WERSJA GIT
-# WERSJA GIT
-# WERSJA GIT
-# WERSJA GIT
-
 import os
 import tempfile
 from cryptography.hazmat.primitives import serialization
@@ -15,20 +9,7 @@ from lxml import etree
 from zeep.wsse.signature import Signature
 import xmlsec
 
-tls_cert_p12_file = 'C:\\Users\\aniol\\Downloads\\certyfikaty\\Podmiot_leczniczy_289-tls.p12'
-wss_cert_p12_file = 'C:\\Users\\aniol\\Downloads\\certyfikaty\\Podmiot_leczniczy_289-wss.p12'
-
 password='pknq9qmVRCJo'
-temp_dir = './'
-
-private_tls_key_file_name = 'tls_private_key.pem'
-public_tls_key_file_name = 'tls_public_key.pem'
-tls_cert_file_name = 'tls_certificate.pem'
-
-
-private_wss_key_file_name = 'wss_private_key.pem'
-public_wss_key_file_name = 'wss_public_key.pem'
-wss_cert_file_name = 'wss_certificate.pem'
 
 
 def create_cert(cert_file_):
@@ -70,16 +51,29 @@ def save_private_key(dir, private_key_file_name, private_key):
     return private_key_path
 
 
-def save_cert_to_file(dir, cert_file_name):
+def save_cert_to_file(dir, cert_file_name, certificate):
     cert_path = os.path.join(dir, cert_file_name)
     with open(cert_path, 'wb+') as cert_file:
         cert_file.write(
-            tls_certificate.public_bytes(serialization.Encoding.PEM),
+            certificate.public_bytes(serialization.Encoding.PEM),
         )
     return cert_path
 
 
 if __name__ == '__main__':
+    # NAZWY KLUCZY CERTYFIKATÓW
+    private_wss_key_file_name = 'wss_private_key.pem'
+    public_wss_key_file_name = 'wss_public_key.pem'
+    wss_cert_file_name = 'wss_certificate.pem'
+
+    private_tls_key_file_name = 'tls_private_key.pem'
+    public_tls_key_file_name = 'tls_public_key.pem'
+    tls_cert_file_name = 'tls_certificate.pem'
+
+    # ŚCIEŻKI DO PLIKÓ .pem
+    tls_cert_p12_file = 'C:\\Users\\aniol\\Downloads\\certyfikaty\\Podmiot_leczniczy_289-tls.p12'
+    wss_cert_p12_file = 'C:\\Users\\aniol\\Downloads\\certyfikaty\\Podmiot_leczniczy_289-wss.p12'
+    temp_dir = './'
 
     tls_private_key, tls_certificate = create_cert(tls_cert_p12_file)
     wss_private_key, wss_certificate = create_cert(wss_cert_p12_file)
@@ -90,8 +84,8 @@ if __name__ == '__main__':
     private_wss_key_path = save_private_key(temp_dir, private_wss_key_file_name, wss_private_key)
     private_tls_key_path = save_private_key(temp_dir, private_tls_key_file_name, tls_private_key)
 
-    tls_cert_path = save_cert_to_file(temp_dir, tls_cert_file_name)
-    wss_cert_path = save_cert_to_file(temp_dir, wss_cert_file_name)
+    tls_cert_path = save_cert_to_file(temp_dir, tls_cert_file_name, tls_certificate)
+    wss_cert_path = save_cert_to_file(temp_dir, wss_cert_file_name, wss_certificate)
 
     session = Session()
     session.cert = tls_cert_path, private_tls_key_file_name
