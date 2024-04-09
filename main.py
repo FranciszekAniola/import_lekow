@@ -6,8 +6,11 @@ from cryptography.hazmat.primitives.serialization import pkcs12
 from zeep import Client
 from zeep.transports import Transport
 from lxml import etree
-from zeep.wsse.signature import Signature
+from zeep.wsse.signature import BinarySignature, Signature
 import xmlsec
+from zeep import xsd
+from zeep.plugins import HistoryPlugin
+
 
 password='pknq9qmVRCJo'
 
@@ -92,7 +95,12 @@ if __name__ == '__main__':
     session.verify = True
 
     transport = Transport(session=session)
+    history = HistoryPlugin()
 
-    client = Client('https://isus.ezdrowie.gov.pl/services/ObslugaEksportuRejestruLekowWS?wsdl', transport=transport, wsse=Signature(private_wss_key_path, public_wss_key_path))
+    client = Client('https://isus.ezdrowie.gov.pl/services/ObslugaEksportuRejestruLekowWS?wsdl',
+                    transport=transport,
+                    wsse=Signature(private_wss_key_path, wss_cert_path)
+                    )
 
-    client.service.pobierzPlikZrzutuRejestruLekow()
+    client.service.pobierzPlikZrzutuRejestruLekow(oidPodmiotu="2.16.840.1.113883.3.4424.2.7.553",data="2024-01-01")
+
