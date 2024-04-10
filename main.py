@@ -73,7 +73,7 @@ if __name__ == '__main__':
     public_tls_key_file_name = 'tls_public_key.pem'
     tls_cert_file_name = 'tls_certificate.pem'
 
-    # ŚCIEŻKI DO PLIKÓ .pem
+    # ŚCIEŻKI DO PLIKÓW .pem
     tls_cert_p12_file = 'C:\\Users\\aniol\\Downloads\\certyfikaty\\Podmiot_leczniczy_289-tls.p12'
     wss_cert_p12_file = 'C:\\Users\\aniol\\Downloads\\certyfikaty\\Podmiot_leczniczy_289-wss.p12'
     temp_dir = './'
@@ -93,14 +93,45 @@ if __name__ == '__main__':
     session = Session()
     session.cert = tls_cert_path, private_tls_key_file_name
     session.verify = True
-
     transport = Transport(session=session)
-    history = HistoryPlugin()
-
-    client = Client('https://isus.ezdrowie.gov.pl/services/ObslugaEksportuRejestruLekowWS?wsdl',
+    wsdl = 'https://isus.ezdrowie.gov.pl/services/ObslugaEksportuRejestruLekowWS?wsdl'
+    client = Client(wsdl=wsdl,
                     transport=transport,
                     wsse=Signature(private_wss_key_path, wss_cert_path)
                     )
+    url = "https://isus.ezdrowie.gov.pl/services/ObslugaEksportuRejestruLekowWS"
 
-    client.service.pobierzPlikZrzutuRejestruLekow(oidPodmiotu="2.16.840.1.113883.3.4424.2.7.553",data="2024-01-01")
+    client._default_service = client.create_service(binding_name='{http://csioz.gov.pl/p1/ws/v20191108/ZrzutRejestruLekowWS/}ObslugaEksportuRejestruLekowWSSoap11Binding', address=url)
+
+
+    soap_header = xsd.Element(
+        '{http://csioz.gov.pl/p1/kontekst/mt/v20180509}kontekstWywolania',
+        xsd.ComplexType([
+            xsd.Element('{http://csioz.gov.pl/p1/kontekst/mt/v20180509}atrybut', xsd.ComplexType([
+                xsd.Element('{http://csioz.gov.pl/p1/kontekst//mtv20180509}nazwa', xsd.String()),
+                xsd.Element('{http://csioz.gov.pl/p1/kontekst/mt/v20180509}wartosc', xsd.String())
+            ]))
+        ])
+    )
+    header_value = soap_header(
+        atrybut=[
+            {
+                "nazwa": "urn:csioz:p1:kontekst:idPodmiotuOidRoot",
+                "wartosc": "2.7.553"
+            },
+            {
+                "nazwa": "urn:csioz:p1:kontekst:idPodmiotuOidExt",
+                "wartosc": "628681020681b56d739f76caf874b5b786d23a86"
+            },
+            {
+                "nazwa": "urn:csioz:p1:kontekst:rolaBiznesowa",
+                "wartosc": "SYSTEM_ZEWNETRZNY_PODMIOTU_LECZNICZEGO"
+            },
+        ]
+    )
+
+    # try:
+    x = client.service.pobierzPlikZrzutuRejestruLekow(_soapheaders=[header_value])
+# except Exception as e:
+    #     print(e)
 
